@@ -10,7 +10,10 @@ Mix_Music *music = nullptr;
 
 Sprite playerSprite;
 
-const int PLAYER_SPEED = 600;
+const int PLAYER_SPEED = 100;
+
+int velocityX;
+int velocityY;
 
 bool isGamePaused;
 
@@ -63,6 +66,23 @@ void update(float deltaTime)
 {
     const Uint8 *currentKeyStates = SDL_GetKeyboardState(NULL);
 
+    velocityY += 210 * deltaTime;
+
+    //        -- Update the player's position
+    playerSprite.textureBounds.y += velocityY;
+    playerSprite.textureBounds.x += velocityX;
+
+    //        To avoid that my player keep going forward infinitely, I multiply the velocity, by my coefficient of friction 0.9
+    //        This will subtract 10% of the player's speed every frame, eventually bringing the player to a stop.
+    velocityX *= 0.9f;
+
+    if (playerSprite.textureBounds.y > SCREEN_HEIGHT)
+    {
+        playerSprite.textureBounds.y = 0;
+        playerSprite.textureBounds.x = SCREEN_WIDTH / 2;
+        velocityY = 0;
+    }
+
     if (currentKeyStates[SDL_SCANCODE_W] && playerSprite.textureBounds.y > 0)
     {
         playerSprite.textureBounds.y -= PLAYER_SPEED * deltaTime;
@@ -75,12 +95,12 @@ void update(float deltaTime)
 
     else if (currentKeyStates[SDL_SCANCODE_A] && playerSprite.textureBounds.x > 0)
     {
-        playerSprite.textureBounds.x -= PLAYER_SPEED * deltaTime;
+        velocityX -= PLAYER_SPEED * deltaTime;
     }
 
     else if (currentKeyStates[SDL_SCANCODE_D] && playerSprite.textureBounds.x < SCREEN_WIDTH - playerSprite.textureBounds.w)
     {
-        playerSprite.textureBounds.x += PLAYER_SPEED * deltaTime;
+        velocityX += PLAYER_SPEED * deltaTime;
     }
 
     if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_UP) && playerSprite.textureBounds.y > 0)
