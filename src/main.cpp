@@ -17,6 +17,7 @@ int velocityX;
 int velocityY;
 
 bool isGamePaused;
+bool playerCanJump;
 
 SDL_Rect platform = {0, SCREEN_HEIGHT - 32, SCREEN_WIDTH, 32};
 SDL_Rect platform2 = {100, SCREEN_HEIGHT - 68, 36, 36};
@@ -54,7 +55,7 @@ void handleEvents()
             exit(0);
         }
 
-        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE)
+        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_p)
         {
             isGamePaused = !isGamePaused;
             Mix_PlayChannel(-1, actionSound, 0);
@@ -63,6 +64,18 @@ void handleEvents()
         if (event.type == SDL_CONTROLLERBUTTONDOWN && event.cbutton.button == SDL_CONTROLLER_BUTTON_START)
         {
             isGamePaused = !isGamePaused;
+            Mix_PlayChannel(-1, actionSound, 0);
+        }
+
+        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE)
+        {
+            playerCanJump = true;
+            Mix_PlayChannel(-1, actionSound, 0);
+        }
+
+        if (event.type == SDL_CONTROLLERBUTTONDOWN && event.cbutton.button == SDL_CONTROLLER_BUTTON_A)
+        {
+            playerCanJump = true;
             Mix_PlayChannel(-1, actionSound, 0);
         }
     }
@@ -130,19 +143,20 @@ void update(float deltaTime)
 
                 else
                 {
-                    playerSprite.textureBounds.x = platform.x + playerSprite.textureBounds.w;
+                    playerSprite.textureBounds.x = platform.x + platform.w;
                 }
 
                 velocityX = 0;
             }
 
-            // jump with space
-            // if (velocityY == 0 && )
-            //     velocityY = 500 * deltaTime;
+            // if (velocityY == 0 && playerCanJump)
+            // {
+            //     velocityY = 4000 * deltaTime;
+            //     playerCanJump = false;
+            // }
         }
     }
 
-    
     if (currentKeyStates[SDL_SCANCODE_A] && playerSprite.textureBounds.x > 0)
     {
         velocityX -= PLAYER_SPEED * deltaTime;
