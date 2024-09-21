@@ -11,10 +11,10 @@ Mix_Music *music = nullptr;
 
 Sprite playerSprite;
 
-const int PLAYER_SPEED = 150;
+const int PLAYER_SPEED = 50;
 
-int velocityX;
-int velocityY;
+float velocityX;
+float velocityY;
 
 bool isGamePaused;
 bool playerCanJump;
@@ -79,7 +79,7 @@ bool checkCollisionInY(SDL_Rect player, SDL_Rect platform)
     return player.y + player.h > platform.y && player.y < platform.y + platform.h;
 }
 
-SDL_Rect getPreviousPosition(SDL_Rect playerBounds)
+SDL_Rect getPreviousPosition(SDL_Rect &playerBounds)
 {
     int positionX = playerBounds.x - velocityX;
     int positionY = playerBounds.y - velocityY;
@@ -91,7 +91,7 @@ void update(float deltaTime)
 {
     const Uint8 *currentKeyStates = SDL_GetKeyboardState(NULL);
 
-    velocityY += 210 * deltaTime;
+    velocityY += 20.8f * deltaTime;
 
     playerSprite.textureBounds.y += velocityY;
     playerSprite.textureBounds.x += velocityX;
@@ -102,6 +102,7 @@ void update(float deltaTime)
         playerSprite.textureBounds.y = 0;
         playerSprite.textureBounds.x = SCREEN_WIDTH / 2;
         velocityY = 0;
+        velocityX = 0;
     }
 
     for (SDL_Rect &platform : platforms)
@@ -113,48 +114,48 @@ void update(float deltaTime)
                 if (velocityY > 0)
                 {
                     playerSprite.textureBounds.y = platform.y - playerSprite.textureBounds.h;
+                    velocityY = 0;
                 }
 
                 else
                 {
-                    playerSprite.textureBounds.y = platform.y + playerSprite.textureBounds.h;
+                    playerSprite.textureBounds.y = platform.y + platform.h;
+                    velocityY = 0;
                 }
-
-                velocityY = 0;
             }
             else if (checkCollisionInY(getPreviousPosition(playerSprite.textureBounds), platform))
             {
                 if (velocityX > 0)
                 {
                     playerSprite.textureBounds.x = platform.x - playerSprite.textureBounds.w;
+                    velocityX = 0;
                 }
 
                 else
                 {
                     playerSprite.textureBounds.x = platform.x + platform.w;
+                    velocityX = 0;
                 }
-
-                velocityX = 0;
             }
         }
     }
 
-    if (currentKeyStates[SDL_SCANCODE_A] && playerSprite.textureBounds.x > 0)
+    if (currentKeyStates[SDL_SCANCODE_A])
     {
         velocityX -= PLAYER_SPEED * deltaTime;
     }
 
-    else if (currentKeyStates[SDL_SCANCODE_D] && playerSprite.textureBounds.x < SCREEN_WIDTH - playerSprite.textureBounds.w)
+    else if (currentKeyStates[SDL_SCANCODE_D])
     {
         velocityX += PLAYER_SPEED * deltaTime;
     }
 
-    else if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT) && playerSprite.textureBounds.x > 0)
+    else if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT))
     {
         playerSprite.textureBounds.x -= PLAYER_SPEED * deltaTime;
     }
 
-    else if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT) && playerSprite.textureBounds.x < SCREEN_WIDTH - playerSprite.textureBounds.w)
+    else if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
     {
         playerSprite.textureBounds.x += PLAYER_SPEED * deltaTime;
     }
