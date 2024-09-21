@@ -105,6 +105,7 @@ void update(float deltaTime)
         velocityX = 0;
     }
 
+// The left size collisio is failing. 
     for (SDL_Rect &platform : platforms)
     {
         if (SDL_HasIntersection(&playerSprite.textureBounds, &platform))
@@ -114,28 +115,28 @@ void update(float deltaTime)
                 if (velocityY > 0)
                 {
                     playerSprite.textureBounds.y = platform.y - playerSprite.textureBounds.h;
-                    velocityY = 0;
                 }
 
                 else
                 {
                     playerSprite.textureBounds.y = platform.y + platform.h;
-                    velocityY = 0;
                 }
+
+                velocityY = 0;
             }
             else if (checkCollisionInY(getPreviousPosition(playerSprite.textureBounds), platform))
             {
                 if (velocityX > 0)
                 {
                     playerSprite.textureBounds.x = platform.x - playerSprite.textureBounds.w;
-                    velocityX = 0;
                 }
 
                 else
                 {
                     playerSprite.textureBounds.x = platform.x + platform.w;
-                    velocityX = 0;
                 }
+
+                velocityX = 0;
             }
         }
     }
@@ -175,8 +176,8 @@ void render()
 
     renderSprite(playerSprite);
 
-    for (SDL_Rect &platform : platforms) {
-
+    for (SDL_Rect &platform : platforms)
+    {
         SDL_RenderFillRect(renderer, &platform);
     }
 
