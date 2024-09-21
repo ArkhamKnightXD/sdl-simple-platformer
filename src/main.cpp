@@ -19,7 +19,7 @@ int velocityY;
 bool isGamePaused;
 
 SDL_Rect platform = {0, SCREEN_HEIGHT - 32, SCREEN_WIDTH, 32};
-SDL_Rect platform2 = {100, SCREEN_HEIGHT - 70, 36, 36};
+SDL_Rect platform2 = {100, SCREEN_HEIGHT - 68, 36, 36};
 
 std::vector<SDL_Rect> platforms;
 
@@ -78,7 +78,7 @@ bool checkCollisionInY(SDL_Rect player, SDL_Rect platform)
     return player.y + player.h > platform.y && player.y < platform.y + platform.h;
 }
 
-SDL_Rect getPreviousPosition(SDL_Rect playerBounds)
+SDL_Rect getPreviousPosition(SDL_Rect &playerBounds)
 {
     int positionX = playerBounds.x - velocityX;
     int positionY = playerBounds.y - velocityY;
@@ -92,12 +92,8 @@ void update(float deltaTime)
 
     velocityY += 210 * deltaTime;
 
-    //        -- Update the player's position
     playerSprite.textureBounds.y += velocityY;
     playerSprite.textureBounds.x += velocityX;
-
-    //        To avoid that my player keep going forward infinitely, I multiply the velocity, by my coefficient of friction 0.9
-    //        This will subtract 10% of the player's speed every frame, eventually bringing the player to a stop.
     velocityX *= 0.9f;
 
     if (playerSprite.textureBounds.y > SCREEN_HEIGHT)
@@ -111,32 +107,31 @@ void update(float deltaTime)
     {
         if (SDL_HasIntersection(&playerSprite.textureBounds, &platform))
         {
-            //  If the player previous position is within the x bounds of the platform,
-            //     then we need to resolve the collision by changing the y value
             if (checkCollisionInX(getPreviousPosition(playerSprite.textureBounds), platform))
             {
-                //                    Player was falling downwards. Resolve upwards.
-                if (velocityY < 0)
-                    playerSprite.textureBounds.y = platform.y + playerSprite.textureBounds.y;
-
-                //                     Player was moving upwards. Resolve downwards
-                else
+                if (velocityY > 0)
+                {
                     playerSprite.textureBounds.y = platform.y - playerSprite.textureBounds.h;
+                }
+
+                else
+                {
+                    playerSprite.textureBounds.y = platform.y + playerSprite.textureBounds.h;
+                }
 
                 velocityY = 0;
             }
-            //  If the player previous position is within the y bounds of the platform,
-            //                then we need to resolve the collision by changing the x value
             else if (checkCollisionInY(getPreviousPosition(playerSprite.textureBounds), platform))
             {
-
-                //                     Player was traveling right. Resolve to the left
                 if (velocityX > 0)
+                {
                     playerSprite.textureBounds.x = platform.x - playerSprite.textureBounds.w;
+                }
 
-                //                     Player was traveling left. Resolve to the right
                 else
+                {
                     playerSprite.textureBounds.x = platform.x + playerSprite.textureBounds.w;
+                }
 
                 velocityX = 0;
             }
@@ -147,17 +142,8 @@ void update(float deltaTime)
         }
     }
 
-    if (currentKeyStates[SDL_SCANCODE_W] && playerSprite.textureBounds.y > 0)
-    {
-        playerSprite.textureBounds.y -= PLAYER_SPEED * deltaTime;
-    }
-
-    else if (currentKeyStates[SDL_SCANCODE_S] && playerSprite.textureBounds.y < SCREEN_HEIGHT - playerSprite.textureBounds.h)
-    {
-        playerSprite.textureBounds.y += PLAYER_SPEED * deltaTime;
-    }
-
-    else if (currentKeyStates[SDL_SCANCODE_A] && playerSprite.textureBounds.x > 0)
+    
+    if (currentKeyStates[SDL_SCANCODE_A] && playerSprite.textureBounds.x > 0)
     {
         velocityX -= PLAYER_SPEED * deltaTime;
     }
@@ -165,16 +151,6 @@ void update(float deltaTime)
     else if (currentKeyStates[SDL_SCANCODE_D] && playerSprite.textureBounds.x < SCREEN_WIDTH - playerSprite.textureBounds.w)
     {
         velocityX += PLAYER_SPEED * deltaTime;
-    }
-
-    if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_UP) && playerSprite.textureBounds.y > 0)
-    {
-        playerSprite.textureBounds.y -= PLAYER_SPEED * deltaTime;
-    }
-
-    else if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN) && playerSprite.textureBounds.y < SCREEN_HEIGHT - playerSprite.textureBounds.h)
-    {
-        playerSprite.textureBounds.y += PLAYER_SPEED * deltaTime;
     }
 
     else if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT) && playerSprite.textureBounds.x > 0)
