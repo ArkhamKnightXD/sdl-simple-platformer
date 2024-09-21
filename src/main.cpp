@@ -1,5 +1,6 @@
 #include "sdl_starter.h"
 #include "sdl_assets_loader.h"
+#include <vector>
 
 SDL_Window *window = nullptr;
 SDL_Renderer *renderer = nullptr;
@@ -10,12 +11,17 @@ Mix_Music *music = nullptr;
 
 Sprite playerSprite;
 
-const int PLAYER_SPEED = 100;
+const int PLAYER_SPEED = 150;
 
 int velocityX;
 int velocityY;
 
 bool isGamePaused;
+
+SDL_Rect platform = {0, SCREEN_HEIGHT - 32, SCREEN_WIDTH, 32};
+SDL_Rect platform2 = {100, SCREEN_HEIGHT - 70, 36, 36};
+
+std::vector<SDL_Rect> platforms;
 
 SDL_Texture *pauseTexture = nullptr;
 SDL_Rect pauseBounds;
@@ -62,6 +68,24 @@ void handleEvents()
     }
 }
 
+bool checkCollisionInX(SDL_Rect player, SDL_Rect platform)
+{
+    return player.x + player.w > platform.x && player.x < platform.x + platform.w;
+}
+
+bool checkCollisionInY(SDL_Rect player, SDL_Rect platform)
+{
+    return player.y + player.h > platform.y && player.y < platform.y + platform.h;
+}
+
+SDL_Rect getPreviousPosition(SDL_Rect playerBounds)
+{
+    int positionX = playerBounds.x - velocityX;
+    int positionY = playerBounds.y - velocityY;
+
+    return {positionX, positionY, playerBounds.w, playerBounds.h};
+}
+
 void update(float deltaTime)
 {
     const Uint8 *currentKeyStates = SDL_GetKeyboardState(NULL);
@@ -81,6 +105,46 @@ void update(float deltaTime)
         playerSprite.textureBounds.y = 0;
         playerSprite.textureBounds.x = SCREEN_WIDTH / 2;
         velocityY = 0;
+    }
+
+    for (SDL_Rect &platform : platforms)
+    {
+        if (SDL_HasIntersection(&playerSprite.textureBounds, &platform))
+        {
+            //  If the player previous position is within the x bounds of the platform,
+            //     then we need to resolve the collision by changing the y value
+            if (checkCollisionInX(getPreviousPosition(playerSprite.textureBounds), platform))
+            {
+                //                    Player was falling downwards. Resolve upwards.
+                if (velocityY < 0)
+                    playerSprite.textureBounds.y = platform.y + playerSprite.textureBounds.y;
+
+                //                     Player was moving upwards. Resolve downwards
+                else
+                    playerSprite.textureBounds.y = platform.y - playerSprite.textureBounds.h;
+
+                velocityY = 0;
+            }
+            //  If the player previous position is within the y bounds of the platform,
+            //                then we need to resolve the collision by changing the x value
+            else if (checkCollisionInY(getPreviousPosition(playerSprite.textureBounds), platform))
+            {
+
+                //                     Player was traveling right. Resolve to the left
+                if (velocityX > 0)
+                    playerSprite.textureBounds.x = platform.x - playerSprite.textureBounds.w;
+
+                //                     Player was traveling left. Resolve to the right
+                else
+                    playerSprite.textureBounds.x = platform.x + playerSprite.textureBounds.w;
+
+                velocityX = 0;
+            }
+
+            // jump with space
+            // if (velocityY == 0 && )
+            //     velocityY = 500 * deltaTime;
+        }
     }
 
     if (currentKeyStates[SDL_SCANCODE_W] && playerSprite.textureBounds.y > 0)
@@ -138,6 +202,9 @@ void render()
 
     renderSprite(playerSprite);
 
+    SDL_RenderFillRect(renderer, &platform);
+    SDL_RenderFillRect(renderer, &platform2);
+
     if (isGamePaused)
     {
         SDL_RenderCopy(renderer, pauseTexture, NULL, &pauseBounds);
@@ -191,6 +258,9 @@ int main(int argc, char *args[])
     Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
 
     // Mix_PlayMusic(music, -1);
+
+    platforms.push_back(platform);
+    platforms.push_back(platform2);
 
     Uint32 previousFrameTime = SDL_GetTicks();
     Uint32 currentFrameTime = previousFrameTime;
