@@ -66,18 +66,6 @@ void handleEvents()
             isGamePaused = !isGamePaused;
             Mix_PlayChannel(-1, actionSound, 0);
         }
-
-        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE)
-        {
-            playerCanJump = true;
-            Mix_PlayChannel(-1, actionSound, 0);
-        }
-
-        if (event.type == SDL_CONTROLLERBUTTONDOWN && event.cbutton.button == SDL_CONTROLLER_BUTTON_A)
-        {
-            playerCanJump = true;
-            Mix_PlayChannel(-1, actionSound, 0);
-        }
     }
 }
 
@@ -91,7 +79,7 @@ bool checkCollisionInY(SDL_Rect player, SDL_Rect platform)
     return player.y + player.h > platform.y && player.y < platform.y + platform.h;
 }
 
-SDL_Rect getPreviousPosition(SDL_Rect &playerBounds)
+SDL_Rect getPreviousPosition(SDL_Rect playerBounds)
 {
     int positionX = playerBounds.x - velocityX;
     int positionY = playerBounds.y - velocityY;
@@ -148,12 +136,6 @@ void update(float deltaTime)
 
                 velocityX = 0;
             }
-
-            // if (velocityY == 0 && playerCanJump)
-            // {
-            //     velocityY = 4000 * deltaTime;
-            //     playerCanJump = false;
-            // }
         }
     }
 
