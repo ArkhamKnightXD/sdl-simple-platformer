@@ -175,8 +175,10 @@ void render()
 
     renderSprite(playerSprite);
 
-    SDL_RenderFillRect(renderer, &platform);
-    SDL_RenderFillRect(renderer, &platform2);
+    for (SDL_Rect &platform : platforms) {
+
+        SDL_RenderFillRect(renderer, &platform);
+    }
 
     if (isGamePaused)
     {
@@ -199,7 +201,7 @@ int main(int argc, char *args[])
 
     if (SDL_NumJoysticks() < 1)
     {
-        printf("No game controllers connected!\n");
+        SDL_Log("No game controllers connected!");
         // return -1;
     }
     else
@@ -207,7 +209,7 @@ int main(int argc, char *args[])
         controller = SDL_GameControllerOpen(0);
         if (controller == NULL)
         {
-            printf("Unable to open game controller! SDL Error: %s\n", SDL_GetError());
+            SDL_Log("Unable to open game controller! SDL Error: %s\n", SDL_GetError());
             return -1;
         }
     }
@@ -258,4 +260,6 @@ int main(int argc, char *args[])
 
         capFrameRate(currentFrameTime);
     }
+
+    quitGame();
 }
