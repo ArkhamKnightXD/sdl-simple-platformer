@@ -9,7 +9,6 @@ Sprite loadSprite(SDL_Renderer *renderer, const char *filePath, int positionX, i
     if (texture != nullptr)
     {
         SDL_QueryTexture(texture, NULL, NULL, &textureBounds.w, &textureBounds.h);
-        SDL_Log("Failed to load texture");
     }
 
     Sprite sprite = {texture, textureBounds};
