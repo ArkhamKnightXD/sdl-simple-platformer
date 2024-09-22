@@ -105,7 +105,7 @@ void update(float deltaTime)
         velocityX = 0;
     }
 
-// The left size collisio is failing. 
+    // The left size collisio is failing.
     for (SDL_Rect &platform : platforms)
     {
         if (SDL_HasIntersection(&playerSprite.textureBounds, &platform))
